@@ -16,6 +16,8 @@ The bach script __preprocessAll.sh__ calls the python script, i.e. the preproces
 - For preparing training data, __preprocess.py__ also accepts two timestamps (signalstart & signalend) that limits the measurements used to the time range during which the boat was actually moving
 
 ## Classification
-Features: box measurements (ax, ay, az, gx, gy, gz)
-Labels: engine state (ON/OFF)
+
+* Features: box measurements (ax, ay, az, gx, gy, gz)
+* Labels: engine state (ON/OFF)
+
 The current script is tested on Google colabs only, and needs to bemoded for local use
