@@ -22,7 +22,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 training_data = 'merged/capture_246058.txt'
 trained_model = 'engineOn_local.h5'
-plotdir = 'plots/model'
+plotdir = 'plots/engineON'
 
 #https://www.tensorflow.org/tutorials/structured_data/feature_columns
 dataframe = pd.read_csv(training_data)
@@ -74,13 +74,13 @@ print('Weight for class false: {:.2e}'.format(weight_for_false))
 print('Weight for class true: {:.2e}'.format(weight_for_true))
 
 metrics = [
-           tf.keras.metrics.Precision(name='precision'),
-           tf.keras.metrics.Recall(name='recall'),
-           tf.keras.metrics.AUC(name='auc'),
-           tf.keras.metrics.TruePositives(name='tp'),
-           tf.keras.metrics.FalsePositives(name='fp'),
-           tf.keras.metrics.TrueNegatives(name='tn'),
-           tf.keras.metrics.FalseNegatives(name='fn')
+  tf.keras.metrics.Precision(name='precision'),
+  tf.keras.metrics.Recall(name='recall'),
+  tf.keras.metrics.AUC(name='auc'),
+  tf.keras.metrics.TruePositives(name='tp'),
+  tf.keras.metrics.FalsePositives(name='fp'),
+  tf.keras.metrics.TrueNegatives(name='tn'),
+  tf.keras.metrics.FalseNegatives(name='fn')
 ]
 #metrics = [ tf.keras.metrics.Accuracy(name='accuracy') ]
 
@@ -130,6 +130,24 @@ plt.xlabel('Epoch')
 plt.ylabel('True Positive Rate')
 plt.legend()
 plt.savefig(os.path.join(plotdir, 'tpr.png'))
+
+_ = plt.figure()
+plt.title('True Positive Rate')
+plt.plot(np.array(history.history['fp'])/(np.array(history.history['fp'])+np.array(history.history['tn'])), np.array(history.history['tp'])/(np.array(history.history['tp'])+np.array(history.history['fn'])), marker='o', color='blue', label='Train')
+plt.plot(np.array(history.history['val_fp'])/(np.array(history.history['val_fp'])+np.array(history.history['val_tn'])), np.array(history.history['val_tp'])/(np.array(history.history['val_tp'])+np.array(history.history['val_fn'])), marker='o', color='orange', label='Val')
+plt.xlabel('FPR')
+plt.ylabel('TPR')
+plt.legend()
+plt.savefig(os.path.join(plotdir, 'roc.png'))
+
+_ = plt.figure()
+plt.title('AUC')
+plt.plot(epochs, history.history['auc'], color='blue', label='Train')
+plt.plot(epochs, history.history['val_auc'], color='orange', label='Val')
+plt.xlabel('Epoch')
+plt.ylabel('AUC')
+plt.legend()
+plt.savefig(os.path.join(plotdir, 'auc.png'))
 
 #Evaluate the baseline model
 results = model.evaluate(test_ds)
