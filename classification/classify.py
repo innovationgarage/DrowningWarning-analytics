@@ -38,7 +38,7 @@ def initializeArgs(option):
     args['trained_model'] = '../models/engineON_local.h5'
     args['plotdir'] = '../plots/engineON'
     args['batch_size'] = 32
-    args['EPOCHS'] = 300
+    args['EPOCHS'] = 3
     args['metrics'] = [
       tf.keras.metrics.Precision(name='precision'),
       tf.keras.metrics.Recall(name='recall'),
@@ -86,6 +86,8 @@ def prepareData(args):
   #split train, valid, test sets
   train, test = train_test_split(dataframe, test_size=0.3)
   train, val = train_test_split(train, test_size=0.3)
+  #save the test set for evaluating the model later
+  test.reset_index(level=[0], drop=True).to_pickle('{}.test.pkl'.format(args['training_data']))
   train_ds = df_to_dataset(train, batch_size=args['batch_size'])
   val_ds = df_to_dataset(val, shuffle=False, batch_size=args['batch_size'])
   test_ds = df_to_dataset(test, shuffle=False, batch_size=args['batch_size'])
