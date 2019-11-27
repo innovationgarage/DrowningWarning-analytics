@@ -17,6 +17,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.externals import joblib
 
 def initializeArgs(option):
   args = {}
@@ -80,6 +81,8 @@ def prepareData(args):
   scaler = MinMaxScaler()
   scaler.fit(dataframe[feature_cols])
   dataframe[feature_cols] = scaler.fit_transform(dataframe[feature_cols])
+  #save the scaler to use when testing the model
+  joblib.dump(scaler, args['trained_model'].replace('.h5', '.scaler.pkl'))
   #make feature layer
   feature_columns = [feature_column.numeric_column(col) for col in list(dataframe.columns) if col!='target']
   feature_layer = tf.keras.layers.DenseFeatures(feature_columns)
