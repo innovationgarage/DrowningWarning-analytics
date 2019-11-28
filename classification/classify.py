@@ -19,16 +19,16 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.externals import joblib
 
-
 def initializeArgs(option):
     args = {}
+    args['mainpath'] = '/home/saghar/IG/projects/DrowningWarning-analytics'
+    args['training_data'] = os.path.join(args['mainpath'], 'data/merged/capture_246058.txt')
+    args['target_col'] = option
+    args['trained_model'] = os.path.join(args['mainpath'], 'models/{}.model'.format(args['target_col']))
+    args['plotdir'] = os.path.join(args['mainpath'], 'plots/{}'.format(args['target_col']))          
     if option == 'batteryvoltage':
-        args['training_data'] = '../data/merged/capture_246058.txt'
-        args['target_col'] = 'batteryvoltage'
-        args['trained_model'] = 'testmodel'
-        args['plotdir'] = '../plots/BV'
         args['batch_size'] = 16
-        args['EPOCHS'] = 30
+        args['EPOCHS'] = 300
         args['metrics'] = [
             tf.keras.metrics.CategoricalHinge(name='hinge'),
             tf.keras.metrics.CategoricalCrossentropy(name='crossentropy')
@@ -36,12 +36,8 @@ def initializeArgs(option):
         args['drop_columns'] = ['timestamp', 'time', 'diff_ms',
                                 'temp', 'batt', 'engine_ON', 'speed_knots', 'lat', 'long']
     elif option == 'engine_ON':
-        args['training_data'] = '../data/merged/capture_246058.txt'
-        args['target_col'] = 'engine_ON'
-        args['trained_model'] = 'testmodel.h5'
-        args['plotdir'] = '../plots/engineON'
         args['batch_size'] = 32
-        args['EPOCHS'] = 30
+        args['EPOCHS'] = 300
         args['metrics'] = [
             tf.keras.metrics.Precision(name='precision'),
             tf.keras.metrics.Recall(name='recall'),
@@ -89,7 +85,7 @@ def prepareData(args):
     scaler.fit(dataframe[feature_cols])
     dataframe[feature_cols] = scaler.fit_transform(dataframe[feature_cols])
     # save the scaler to use when testing the model
-    joblib.dump(scaler, args['trained_model'].replace('.h5', '.scaler.pkl'))
+    joblib.dump(scaler, args['trained_model'].replace('.model', '.scaler.pkl'))
     # make feature layer
     feature_columns = [feature_column.numeric_column(
         col) for col in list(dataframe.columns) if col != 'target']
@@ -186,7 +182,7 @@ def main(option):
         args, feature_columns, n_classes, train_ds, val_ds, class_weight)
     evaluateHistory(args, history)
     model.summary()
-    model.save('aaa.model')
+    model.save(args['trained_model'])
 
 if __name__ == "__main__":
     main(sys.argv[1])
