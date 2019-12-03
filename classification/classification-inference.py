@@ -46,6 +46,7 @@ def main(option):
     args = initializeArgs(option)
     model, test = infer(args)
     print(test.head())
+    test.to_pickle('test_{}.pkl'.format(option))
 
 if __name__=="__main__":
   main(sys.argv[1])
