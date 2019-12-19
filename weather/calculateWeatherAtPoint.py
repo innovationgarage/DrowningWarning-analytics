@@ -16,21 +16,20 @@ def readWeatherData(filepath):
     dataset[uparam].metpy.convert_units('knots')
     dataset[vparam].metpy.convert_units('knots')
     data_crs = dataset[uparam].metpy.cartopy_crs
-    lat = dataset[uparam].latitude
-    lon = dataset[uparam].longitude
     wind_speed = mpcalc.wind_speed(dataset[uparam], dataset[uparam])
     wind_direction = mpcalc.wind_direction(dataset[uparam], dataset[uparam])
     dataset['wind_speed'] = xr.DataArray(wind_speed.magnitude, coords=dataset[uparam].coords, dims=dataset[uparam].dims)
     dataset['wind_speed'].attrs['units'] = wind_speed.units
     dataset['wind_direction'] = xr.DataArray(wind_direction.magnitude, coords=dataset[uparam].coords, dims=dataset[uparam].dims)
     dataset['wind_direction'].attrs['units'] = wind_direction.units
-    return dataset, lon, lat
+    return dataset
 
-def getNearestForecast(data, goal_lon, goal_lat, goal_time, goal_param, which):
+def getNearestForecast(data, data_crs, goal_lon, goal_lat, goal_time, goal_param, which):
     #convert lat,lon to x,y using the projection of the dataset
     proj_wgs84 = pyproj.Proj(init="epsg:4326")
     #proj_wgs84 = pyproj.Proj("epsg:4326")
-    data_crs = data[goal_param].metpy.cartopy_crs
+    if not data_crs:
+        data_crs = data[goal_param].metpy.cartopy_crs
     goal_x, goal_y = pyproj.transform(proj_wgs84, data_crs.proj4_params, goal_lon, goal_lat)
     #select the closest grid
     weather_array = data[goal_param].sel(x=goal_x, y=goal_y, time=goal_time, method='nearest')
@@ -39,11 +38,12 @@ def getNearestForecast(data, goal_lon, goal_lat, goal_time, goal_param, which):
     elif which == 'time':
         return weather_array.time.values
 
-def getProjectedLocation(data, goal_lon, goal_lat, goal_param, which):
+def getProjectedLocation(data, data_crs, goal_lon, goal_lat, goal_param, which):
     #convert lat,lon to x,y using the projection of the dataset
     proj_wgs84 = pyproj.Proj(init="epsg:4326")
     #proj_wgs84 = pyproj.Proj("epsg:4326")
-    data_crs = data[goal_param].metpy.cartopy_crs
+    if not data_crs:
+        data_crs = data[goal_param].metpy.cartopy_crs
     goal_x, goal_y = pyproj.transform(proj_wgs84, data_crs.proj4_params, goal_lon, goal_lat)
     if which == 'x':
         return goal_x
@@ -54,19 +54,38 @@ def addNearest():
     boat_filepath = '../data/merged/capture_246058.txt'
     weather_filepath = 'data/arome_arctic_full_2_5km_20191011T09Z.nc'
     out_filepath = boat_filepath.replace('.txt', '_wind.txt')
-    
+    weather_dirlist = [
+        'data/arome_arctic_full_2_5km_20191011T09Z.nc',
+        'data/arome_arctic_full_2_5km_20191011T12Z.nc',
+        'data/arome_arctic_full_2_5km_20191011T15Z.nc',
+        'data/arome_arctic_full_2_5km_20191011T18Z.nc'
+    ]
+
+    for i, weather_filepath in enumerate(weather_dirlist):
+        print(i, weather_filepath)
+        if i == 0:
+            weather = readWeatherData(weather_filepath)
+            weather = weather[['wind_speed', 'wind_direction']]
+            data_crs = weather['wind_speed'].metpy.cartopy_crs
+        else:
+            tmp = readWeatherData(weather_filepath)
+            tmp = tmp[['wind_speed', 'wind_direction']]
+            weather = xr.concat([weather, tmp], dim='time')
+            del tmp
+        #drop duplicte times    
+        _, index = np.unique(weather['time'], return_index=True)
+        weather = weather.isel(time=index)
     boat = pd.read_csv(boat_filepath)
-    weather, lon, lat = readWeatherData(weather_filepath)    
     uparam = 'wind_speed'
     vparam = 'wind_direction'
-    boat['x'] = boat.apply(lambda row: getProjectedLocation(weather, row['long'], row['lat'], uparam, 'x'), axis=1)
-    boat['y'] = boat.apply(lambda row: getProjectedLocation(weather, row['long'], row['lat'], uparam, 'y'), axis=1)
+    boat['x'] = boat.apply(lambda row: getProjectedLocation(weather, data_crs, row['long'], row['lat'], uparam, 'x'), axis=1)
+    boat['y'] = boat.apply(lambda row: getProjectedLocation(weather, data_crs, row['long'], row['lat'], uparam, 'y'), axis=1)
     #NEAREST METHOD
-    boat['wind_speed'] = boat.apply(lambda row: getNearestForecast(weather, row['long'], row['lat'], row['timestamp'], uparam, which='array'), axis=1)
-    boat['wind_direction'] = boat.apply(lambda row: getNearestForecast(weather, row['long'], row['lat'], row['timestamp'], vparam, which='array'), axis=1)
-    boat['wind_time'] = boat.apply(lambda row: getNearestForecast(weather, row['long'], row['lat'], row['timestamp'], vparam, which='time'), axis=1)
+    boat['wind_speed'] = boat.apply(lambda row: getNearestForecast(weather, data_crs, row['long'], row['lat'], row['timestamp'], uparam, which='array'), axis=1)
+    boat['wind_direction'] = boat.apply(lambda row: getNearestForecast(weather, data_crs, row['long'], row['lat'], row['timestamp'], vparam, which='array'), axis=1)
+    boat['wind_time'] = boat.apply(lambda row: getNearestForecast(weather, data_crs, row['long'], row['lat'], row['timestamp'], vparam, which='time'), axis=1)
     boat.to_csv(out_filepath, index=False)
-    return boat
+    return boat, weather
 
 def getRelevantRegion(data, goal_lon, goal_lat, goal_param):
     #convert lat,lon to x,y using the projection of the dataset
@@ -123,4 +142,4 @@ def regridRange(array, new_x, new_y):
 
 #regrid
 #main()
-boat = addNearest()
+boat, weather = addNearest()
