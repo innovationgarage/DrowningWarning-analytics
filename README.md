@@ -22,6 +22,7 @@ The bach script __preprocessAll.sh__ calls the python script, i.e. the preproces
 
 ### Weather (used)
 - [AROME-arctic full model forecast](https://www.met.no/en/projects/The-weather-model-AROME-Arctic)
+- [WAM4 archive](http://thredds.met.no/thredds/catalog/fou-hi/mywavewam4archive/catalog.html)
 
 ### Weather (for reference)
 - [list of free MET data](https://www.met.no/frie-meteorologiske-data/frie-meteorologiske-data)
