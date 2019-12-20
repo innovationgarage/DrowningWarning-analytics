@@ -19,3 +19,6 @@ The bach script __preprocessAll.sh__ calls the python script, i.e. the preproces
 
 * Features: box measurements (ax, ay, az, gx, gy, gz)
 * Labels: engine state (ON/OFF) or batteryvoltage (passed as a sys arg to classify.py)
+
+### Weather model
+- [AROME-arctic full model forecast](https://www.met.no/en/projects/The-weather-model-AROME-Arctic)
