@@ -1,9 +1,11 @@
-FILES=data/first/*.txt
+FILES=data/raw/first/*.txt
+mkdir -p data/clean
+mkdir -p data/merged
 for f in $FILES
 do
     echo "Processing "$f" file..."
     bname=$(basename -- "$f")
-    python preprocess.py --ti data/first/telespor.csv --to clean/$bname --ci $f --co clean/$bname --allout merged/$bname --starttime "2019-10-11 10:17:00"
+    python preprocessing/preprocess.py --ti data/raw/first/telespor.csv --to data/clean/$bname --ci $f --co data/clean/$bname --allout data/merged/$bname --starttime "2019-10-11 10:17:00"
 done
 #cp data/first/capture_246058.txt.merged.csv all_data_1.csv
 
