@@ -23,6 +23,9 @@ Input: data/raw Output: data/merged
 * Features: box measurements (ax, ay, az, gx, gy, gz)
 * Labels: engine state (ON/OFF) or batteryvoltage (passed as a sys arg to classify.py)
 
+    python classification/classify.py batteryvoltage
+    python classification/classify.py engine_ON
+
 ### Weather (used)
 - [AROME-arctic full model forecast](https://www.met.no/en/projects/The-weather-model-AROME-Arctic)
 - [WAM4 archive](http://thredds.met.no/thredds/catalog/fou-hi/mywavewam4archive/catalog.html)
