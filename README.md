@@ -2,7 +2,10 @@
 analyzing data collected from the box (containing accelerometer + gyro sesonrs)
 
 ## PreProcessing
-The bach script __preprocessAll.sh__ calls the python script, i.e. the preprocessing pipeline __preprocess.py__ that currently does roughly this:
+
+The bach script __preprocessing/preprocessAll.sh__ calls the python script, i.e. the preprocessing pipeline __preprocessing/preprocess.py__ that currently does roughly this:
+
+Input: data/raw Output: data/merged
 
 ### Telespor (telespor)
 - cleans telespor export for lat, lon, and batteryvoltage
