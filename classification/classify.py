@@ -5,7 +5,7 @@
 python classify.py batteryvoltage
 python classify.py engine_ON
 """
-import os
+import os.path
 import sys
 import numpy as np
 import pandas as pd
@@ -21,7 +21,13 @@ from sklearn.externals import joblib
 
 def initializeArgs(option):
     args = {}
-    args['mainpath'] = '/home/saghar/IG/projects/DrowningWarning-analytics'
+    args['mainpath'] = os.getcwd()
+    modelpath = os.path.join(args['mainpath'], "models", option)
+    if not os.path.exists(modelpath):
+        os.makedirs(modelpath)
+    plotpath = os.path.join(args['mainpath'], "plots", option)
+    if not os.path.exists(plotpath):
+        os.makedirs(plotpath)
     args['training_data'] = os.path.join(args['mainpath'], 'data/merged/capture_246058.txt')
     args['target_col'] = option
     args['trained_model'] = os.path.join(args['mainpath'], 'models/{}.model'.format(args['target_col']))
