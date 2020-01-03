@@ -21,7 +21,10 @@ def calculateWindSpeedDirection(df, data, filepath, uparam, vparam, time_idx):
     wind_direction = mpcalc.wind_direction(data[uparam], data[vparam])
     df['wind_speed'] = wind_speed[time_idx,0,:,:].flatten()
     df['wind_direction'] = wind_direction[time_idx,0,:,:].flatten()
-    return df
+    dims = data[uparam].dims
+    data['wind_speed'] = (dims, wind_speed)
+    data['wind_direction'] = (dims, wind_direction)
+    return df, data
 
 camp = [69.961308, 18.703892]
 filepath = 'data/arome_arctic_full_2_5km_20191011T09Z.nc'
@@ -33,12 +36,15 @@ dataset = xr.open_dataset(filepath)
 dataset = dataset.metpy.parse_cf([uparam, vparam])
 dataset[uparam].metpy.convert_units('knots')
 dataset[vparam].metpy.convert_units('knots')
+data_crs = dataset[uparam].metpy.cartopy_crs
+lat = dataset[uparam].latitude
+lon = dataset[uparam].longitude
 
 time_steps = dataset[uparam].time.values
 for time_idx, time_step in enumerate(time_steps):
     print(time_step)
     df = dataset2df(dataset, use_keys, time_step, time_idx)
-    df = calculateWindSpeedDirection(df, dataset, filepath, use_keys[0], use_keys[1], time_idx)
+    df, dataset = calculateWindSpeedDirection(df, dataset, filepath, use_keys[0], use_keys[1], time_idx)
     df.to_pickle('data/wind_{}.pkl'.format(time_step))
 
 # for time_idx in range(3):
