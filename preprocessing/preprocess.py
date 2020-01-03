@@ -49,8 +49,7 @@ def calculateSpeed(df):
     df['dt(s)'] = pd.to_numeric(df['dt'])*1e-9
     df['lat-1'] = df['lat'].shift(1)
     df['long-1'] = df['long'].shift(1)
-    df = df[1:]
-    df['distance(m)'] = df[['lat', 'long', 'lat-1', 'long-1']].apply(lambda x: distance((x[0], x[1]), (x[2], x[3])).m, axis=1)
+    df.loc[1:,'distance(m)'] = df.loc[1:,['lat', 'long', 'lat-1', 'long-1']].apply(lambda x: distance((x[0], x[1]), (x[2], x[3])).m, axis=1)
     df['speed(m/s)'] = df['distance(m)'] / df['dt(s)']
     df['speed_knots'] = df['speed(m/s)'] * 1.94384449
     df['speed_knots'].fillna(-1, inplace=True)
@@ -103,10 +102,10 @@ def resampleAll(capture, telespor, sample_rate, signal_start, signal_end):
     signal_end = pd.to_datetime(signal_end, utc=True) 
     
     capture.set_index('timestamp', inplace=True)
-    capture = capture.resample(sample_rate).mean()
+    capture = capture.resample(sample_rate).mean().interpolate()
     
     telespor.set_index('timestamp', inplace=True)
-    telespor = telespor.resample(sample_rate).mean()
+    telespor = telespor.resample(sample_rate).mean().interpolate()
     
     telespor.reset_index(level=[0], inplace=True)
     capture.reset_index(level=[0], inplace=True)
@@ -137,7 +136,6 @@ def main(args):
         merged[col] = merged[col].fillna(method='bfill') 
         merged['engine_ON'] = merged['batteryvoltage']==merged.batteryvoltage.max()
 
-    merged = calculateSpeed(merged)    
     merged.to_csv(args.allout, index=False)        
 
 if __name__=="__main__":
