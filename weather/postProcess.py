@@ -19,6 +19,7 @@ def postProcess(filepath):
     df['bssmooth'] = savgol_filter(df['speed_knots'], window_length, polyorder)
     df['wssmooth'] = savgol_filter(df['wind_speed'], window_length, polyorder) 
     #scale
+    df = scaleParam(df, 'speed_knots', 'speed_knots')
     df = scaleParam(df, 'bssmooth', 'boatspeed')
     df = scaleParam(df, 'wssmooth', 'windspeed')
     return df
@@ -26,7 +27,8 @@ def postProcess(filepath):
 in_filepath ='../data/merged/capture_246058_wind.txt'
 boat = postProcess(in_filepath)
 plt.figure(figsize=(15,5))
-plt.plot(boat.time, boat.boatspeed, lw=2, label='Boat speed')
+plt.plot(boat.time, boat.speed_knots, lw=1, label='Boat speed', alpha=0.3)
+plt.plot(boat.time, boat.boatspeed, lw=2, label='Boat speed (smoothed)')
 plt.plot(boat.time, boat.windspeed, lw=3, label='Wind speed')
 plt.xlabel('time (unix)')
 plt.ylabel('Speed (scaled)')
