@@ -1,16 +1,25 @@
-FILES=data/first/*.txt
+#! /bin/bash
+
+FILES=data/raw/*/*.txt
+mkdir -p data/clean
+mkdir -p data/merged
 for f in $FILES
 do
     echo "Processing "$f" file..."
-    bname=$(basename -- "$f")
-    python preprocess.py --ti data/first/telespor.csv --to clean/$bname --ci $f --co clean/$bname --allout merged/$bname --starttime "2019-10-11 10:17:00"
+    filename="$(basename -- "$f")"
+    basename="$(basename -- "$f" .txt)"
+    dirname="$(dirname "$f")"
+    if ! [ -e "$dirname/$basename.starttime" ]; then
+        echo "  Missing start time"
+    else
+        starttime="$(cat "$dirname/$basename.starttime")"
+        echo "  Start time: $starttime"
+        python preprocessing/preprocess.py \
+               --ti "$dirname/telespor.csv" \
+               --to data/clean/telespor.$filename \
+               --ci $f \
+               --co data/clean/capture.$filename \
+               --allout data/merged/$filename \
+               --starttime "$starttime"
+    fi
 done
-#cp data/first/capture_246058.txt.merged.csv all_data_1.csv
-
-# FILES=data/second/*.txt
-# for f in $FILES
-# do
-#     echo "Processing "$f" file..."
-#     python preprocess.py --ti data/second/telespor.csv --to data/second/telespor_clean.csv --ci $f --co $f.clean.csv --allout $f.merged.csv --starttime "2019-10-22 16:34:00" 
-# done
-# cp data/second/capture_864481.txt.merged.csv all_data_2.csv
