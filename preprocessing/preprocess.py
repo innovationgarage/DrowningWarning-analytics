@@ -71,10 +71,10 @@ def scaleColumns(df, cols):
     df[cols] = scaler.fit_transform(df[cols])
     return df
 
-def smoothColumns(df, cols):
+def smoothColumns(df, cols, ws):
     savgol_cols = ['{}_savgol'.format(col) for col in cols]
     for i, col in enumerate(cols):
-        df[savgol_cols[i]] = savgol_filter(df[col], 101 ,3)
+        df[savgol_cols[i]] = savgol_filter(df[col], ws ,3)
     return df
 
 def cleanCapture(infile, outfile, starttime):
